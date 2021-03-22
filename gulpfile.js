@@ -4,30 +4,29 @@
  */
 'use strict';
 
-var gulp = require('gulp');
-var util = require('gulp-util');
-var fs = require('fs');
-var sass = require('gulp-sass');
-var concat = require('gulp-concat');
-var less = require('gulp-less');
-var stylus = require('gulp-stylus');
-var minifyCSS = require('gulp-minify-css');
-var imagemin = require('gulp-imagemin');
-var bSync = require('browser-sync').create();
-var uglify = require('gulp-uglify');
-var path = require('path');
-var yaml = require('js-yaml');
-var process = require('process');
-var cp = require('child_process');
-var spawn = require('cross-spawn-async');
+const gulp = require('gulp');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
+const fs = require('fs');
+const sass = require('gulp-sass');
+const concat = require('gulp-concat');
+const less = require('gulp-less');
+const stylus = require('gulp-stylus');
+const cleanCSS = require('gulp-clean-css');
+const imagemin = require('gulp-imagemin');
+const bSync = require('browser-sync').create();
+const uglify = require('gulp-uglify');
+const yaml = require('js-yaml');
+const process = require('process');
+const spawn = require('cross-spawn');
 
 /**
  * Get CLI args
  */
-var FOLDER;
-for (var i = process.argv.length; i > 0; i--) {
-    var arg = process.argv[i];
-    var nextArg = process.argv[i + 1];
+let FOLDER;
+for (let i = process.argv.length; i > 0; i--) {
+    let arg = process.argv[i];
+    let nextArg = process.argv[i + 1];
 
     if (arg == '--folder' && nextArg) {
         FOLDER = process.cwd() + '/' + nextArg;
@@ -35,20 +34,20 @@ for (var i = process.argv.length; i > 0; i--) {
 }
 
 if (!FOLDER) {
-    var example = 'gulp --folder opencode.commercesuite.com.br';
-    util.log(util.colors.red('Error: missing param: --folder, ex: ' + example));
+    let example = 'gulp --folder opencode.commercesuite.com.br';
+    log(colors.red('Error: missing param: --folder, ex: ' + example));
     process.exit(1);
 }
 
 /**
  * Get OpenCode config file
  */
-var configYML = FOLDER + '/config.yml';
-var configOpenCode = yaml.safeLoad(fs.readFileSync(configYML, 'utf8'));
+let configYML = FOLDER + '/config.yml';
+let configOpenCode = yaml.load(fs.readFileSync(configYML, 'utf8'));
 const URL = configOpenCode[':preview_url'];
 
 if (!URL) {
-    util.log(util.colors.red('Error: Did you configured opencode? Check your file: ' + configYML));
+    log(colors.red('Error: Did you configured opencode? Check your file: ' + configYML));
     process.exit(1);
 }
 
@@ -57,42 +56,47 @@ const JSPATH = FOLDER + '/js/';
 const IMGPATH = FOLDER + '/img/';
 const autoprefixer = require('gulp-autoprefixer');
 
-gulp.task('sass', () => {
-  gulp.src(CSSPATH + 'sass/theme.min.scss')
-    .pipe(sass({errLogToConsole: true}))
-    .on('error', util.log)
-    .pipe(concat('theme.min.css'))
-    .pipe(autoprefixer())
-    .pipe(minifyCSS())
-    .pipe(gulp.dest(CSSPATH));
-});
 
-gulp.task('less', () => {
-    gulp.src(CSSPATH + 'less/theme.min.less')
-    .pipe(less())
-    .pipe(concat('theme.min.css'))
-    .pipe(autoprefixer())
-    .pipe(minifyCSS())
-    .pipe(gulp.dest(CSSPATH));
-});
+const taskSass = () => {
+    gulp.src(CSSPATH + 'sass/theme.min.scss', { allowEmpty: true })
+        .pipe(sass({errLogToConsole: true}))
+        .on('error', log)
+        .pipe(concat('theme.min.css'))
+        .pipe(autoprefixer())
+        .pipe(cleanCSS())
+        .pipe(gulp.dest(CSSPATH));
+}
+gulp.task('sass', taskSass);
 
-gulp.task('stylus', () => {
-    gulp.src(CSSPATH + 'stylus/theme.min.styl')
+const taskLess = () => {
+    gulp.src(CSSPATH + 'less/theme.min.less', { allowEmpty: true })
+        .pipe(less())
+        .pipe(concat('theme.min.css'))
+        .pipe(autoprefixer())
+        .pipe(cleanCSS())
+        .pipe(gulp.dest(CSSPATH));
+}
+gulp.task('less', taskLess);
+
+const taskStylus = () => {
+    gulp.src(CSSPATH + 'stylus/theme.min.styl', { allowEmpty: true })
         .pipe(stylus())
         .pipe(concat('theme.min.css'))
         .pipe(autoprefixer())
-        .pipe(minifyCSS())
+        .pipe(cleanCSS())
         .pipe(gulp.dest(CSSPATH));
-});
+}
+gulp.task('stylus', taskStylus);
 
-gulp.task('js', () => {
-  gulp.src(JSPATH + "modules/*.js")
-    .pipe(concat("theme.min.js"))
-    .pipe(uglify({"compress": false}))
-    .pipe(gulp.dest(JSPATH));
-});
+const taskJS = () => {
+    gulp.src(JSPATH + "modules/*.js", { allowEmpty: true })
+        .pipe(concat("theme.min.js"))
+        .pipe(uglify({"compress": false}))
+        .pipe(gulp.dest(JSPATH));
+}
+gulp.task('js', taskJS);
 
-var imageFiles = [
+let imageFiles = [
     IMGPATH + '**/*.{png,jpg,gif,svg}',
     '!'+ IMGPATH + 'dist/*'
 ];
@@ -124,30 +128,29 @@ gulp.task('bsync', () => {
 gulp.task('opencode', () => {
     process.chdir(FOLDER);
 
-    var opencode = spawn('opencode', ['watch']);
+    let opencode = spawn('opencode', ['watch']);
 
     opencode.stdout.on('data', (data) => {
-        var output = util.colors.green(data);
+        let output = colors.green(data);
         if (data.indexOf('Error') > -1) {
-            output = util.colors.bgRed(data);
+            output = colors.bgRed(data);
         }
         process.stdout.write(output);
     });
 
     opencode.stderr.on('data', (data) => {
-        process.stdout.write(util.colors.bgRed(data));
+        process.stdout.write(colors.bgRed(data));
     });
 });
 
 gulp.task('watch', () => {
-    gulp.watch(CSSPATH + 'sass/*', ['sass']);
-    gulp.watch(CSSPATH + 'less/*', ['less']);
-    gulp.watch(CSSPATH + 'stylus/*', ['stylus']);
-    gulp.watch(JSPATH + 'modules/*.js', ['js']);
-    // gulp.watch(imageFiles, ['imagemin']);
+    gulp.watch(CSSPATH + 'sass/*', taskSass);
+    gulp.watch(CSSPATH + 'less/*', taskLess);
+    gulp.watch(CSSPATH + 'stylus/*', taskStylus);
+    gulp.watch(JSPATH + 'modules/*.js', taskJS);
 });
 
-gulp.task('default', [
+gulp.task('default', gulp.parallel(
     'watch',
     'opencode',
     'bsync', // comment this line if you're using remotes envs (Cloud 9, etc...)
@@ -156,4 +159,4 @@ gulp.task('default', [
     'stylus',
     'js',
     // 'imagemin',
- ]);
+));
