@@ -15,7 +15,8 @@
     "gulp-sass": "^4.1.0",
     "gulp-stylus": "^2.7.0",
     "gulp-uglify": "^3.0.2",
-    "js-yaml": "^4.0.0"
+    "js-yaml": "^4.0.0",
+    "node-sass": "^5.0.0"
   },
   "devDependencies": {
     "browser-sync": "^2.26.14",

@@ -20,6 +20,8 @@ const yaml = require('js-yaml');
 const process = require('process');
 const spawn = require('cross-spawn');
 
+sass.compiler = require('node-sass');
+
 /**
  * Get CLI args
  */
@@ -144,10 +146,10 @@ gulp.task('opencode', () => {
 });
 
 gulp.task('watch', () => {
-    gulp.watch(CSSPATH + 'sass/*', taskSass);
-    gulp.watch(CSSPATH + 'less/*', taskLess);
-    gulp.watch(CSSPATH + 'stylus/*', taskStylus);
-    gulp.watch(JSPATH + 'modules/*.js', taskJS);
+    gulp.watch(CSSPATH + 'sass/*', gulp.parallel(taskSass));
+    gulp.watch(CSSPATH + 'less/*', gulp.parallel(taskLess));
+    gulp.watch(CSSPATH + 'stylus/*', gulp.parallel(taskStylus));
+    gulp.watch(JSPATH + 'modules/*.js', gulp.parallel(taskJS));
 });
 
 gulp.task('default', gulp.parallel(
