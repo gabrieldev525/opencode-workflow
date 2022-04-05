@@ -20,6 +20,22 @@ Pré-requisitos: NodeJS e NPM
 2. `cd opencode-workflow`
 3. `npm install`
 
+Alguns problemas podem acontecer durante a instalação. Segue solução:
+https://github.com/tray-tecnologia/opencode_theme/issues/41
+https://www.garron.me/en/linux/install-ruby-2-3-3-ubuntu.html
+
+```bash
+rbenv install 2.3.3
+rbenv global 2.3.3
+
+gem install faraday -v 1.0.1
+gem install launchy -v 2.4.3
+gem install vcr -v 6.0.0
+gem install racc -v 1.5.2
+gem install nokogiri -v 1.6.8
+gem install opencode_theme
+```
+
 ## Configuração/Uso
 
 Configure a loja que você vai trabalhar:
