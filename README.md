@@ -21,7 +21,9 @@ Pré-requisitos: NodeJS e NPM
 3. `npm install`
 
 Alguns problemas podem acontecer durante a instalação. Segue solução:
+<br>
 https://github.com/tray-tecnologia/opencode_theme/issues/41
+<br>
 https://www.garron.me/en/linux/install-ruby-2-3-3-ubuntu.html
 
 ```bash
